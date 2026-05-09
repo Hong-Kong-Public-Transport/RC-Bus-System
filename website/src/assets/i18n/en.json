@@ -23,6 +23,7 @@
 		"display": "Display {{index}}",
 		"addGroup": "Add Group",
 		"addDisplay": "Add Display",
+		"uploadFromZip": "Upload from Zip",
 		"success": "Successfully saved displays",
 		"error": "Failed to save displays"
 	}

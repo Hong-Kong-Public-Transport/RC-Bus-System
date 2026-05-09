@@ -2,7 +2,7 @@ import {inject, Injectable, signal} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {BOARDS, SOURCES} from "../utility/constants";
 import {map} from "rxjs";
-import {getWithRetry, setIfUndefined} from "../utility/utilities";
+import {BYTES_PER_INT, getWithRetry, setIfUndefined} from "../utility/utilities";
 import {ByteReader} from "../utility/byte-reader";
 import {Displays} from "../entity/displays";
 import {PersistedDisplay} from "../entity/data";
@@ -69,5 +69,38 @@ export class LibraryService {
 			},
 			displays: displayDetails.displays,
 		} : undefined;
+	}
+
+	getFileName(width: number, height: number, byteReader: ByteReader, offset: number) {
+		const displaysList = this.displaysBySize()[width]?.[height];
+
+		if (displaysList) {
+			for (const displays of displaysList) {
+				displays.byteReader.seek(0);
+				const imageCount = displays.byteReader.readInt();
+
+				for (let i = 0; i < imageCount; i++) {
+					displays.byteReader.seek((3 + i) * BYTES_PER_INT);
+					const offset1 = displays.byteReader.readInt();
+					const offset2 = i === imageCount - 1 ? displays.byteReader.getLength() : displays.byteReader.readInt();
+					byteReader.seek(offset);
+					displays.byteReader.seek(offset1);
+					let match = true;
+
+					for (let j = offset1; j < offset2; j++) {
+						if (byteReader.readByte() !== displays.byteReader.readByte()) {
+							match = false;
+							break;
+						}
+					}
+
+					if (match) {
+						return displays.indexList[i].fileName;
+					}
+				}
+			}
+		}
+
+		return undefined;
 	}
 }

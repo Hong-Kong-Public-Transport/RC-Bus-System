@@ -23,6 +23,7 @@
 		"display": "顯示屏 {{index}}",
 		"addGroup": "新增顯示組",
 		"addDisplay": "新增顯示屏",
+		"uploadFromZip": "從壓縮檔案上載",
 		"success": "成功儲存顯示屏設定",
 		"error": "儲存顯示屏設定失敗"
 	}

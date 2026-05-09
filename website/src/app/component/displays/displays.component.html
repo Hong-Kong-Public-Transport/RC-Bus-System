@@ -3,6 +3,7 @@
 		<div class="row gap-small">
 			<p-button [label]="t('displays.addGroup')" icon="pi pi-plus" (onClick)="addGroup()"/>
 			<app-save-button successTranslationKey="displays.success" errorTranslationKey="displays.error" [payloadProvider]="() => save()"/>
+			<p-fileupload #upload mode="basic" [chooseLabel]="t('displays.uploadFromZip')" chooseIcon="pi pi-upload" url="https://www.primefaces.org/cdn/api/upload.php" maxFileSize="1000000" accept=".zip" [chooseButtonProps]="{severity:'secondary'}" (onSelect)="loadFromZip($event)"/>
 		</div>
 
 		@if (getDisplayGroups().length > 0) {

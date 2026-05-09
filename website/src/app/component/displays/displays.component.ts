@@ -13,6 +13,7 @@ import {CanvasComponent} from "../canvas/canvas.component";
 import {LibraryComponent} from "../library/library.component";
 import {SaveButtonComponent} from "../save-button/save-button.component";
 import {SortAndDeleteButtonsComponent} from "../sort-and-delete-buttons/sort-and-delete-buttons.component";
+import {FileSelectEvent, FileUploadModule} from "primeng/fileupload";
 
 @Component({
 	selector: "app-displays",
@@ -21,6 +22,7 @@ import {SortAndDeleteButtonsComponent} from "../sort-and-delete-buttons/sort-and
 		PanelModule,
 		ButtonModule,
 		DialogModule,
+		FileUploadModule,
 		TooltipModule,
 		TranslocoDirective,
 		CanvasComponent,
@@ -53,6 +55,10 @@ export class DisplaysComponent {
 
 	addGroup() {
 		this.displaysService.addGroup();
+	}
+
+	loadFromZip(event: FileSelectEvent) {
+		event.files[0].bytes().then(zipFileBytes => this.displaysService.loadFromZip(zipFileBytes));
 	}
 
 	openDialog(libraryComponent: LibraryComponent, groupIndex: number, boardIndex: number) {
