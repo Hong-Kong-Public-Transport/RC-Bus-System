@@ -5,8 +5,10 @@
 build/
 
 esp32/**/.gitignore
-esp8266/.gitignore
+esp32/display/data
 pcb/.gitignore
 website/.gitignore
+website/src/assets/display
+website/src/assets/settings.json
 
 src/main/resources/static/

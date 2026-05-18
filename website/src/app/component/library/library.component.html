@@ -1,0 +1,19 @@
+<p-dialog *transloco="let t" [header]="t('displays.addDisplay')" [(visible)]="dialogVisible" modal dismissableMask [style]="{ width: '80%', height: '80%' }">
+	<div class="column gap content" #wrapper>
+		<p-float-label variant="in">
+			<input id="input" pInputText type="text" [(ngModel)]="searchTerm" autocomplete="off" spellcheck="false" fluid/>
+			<label for="input">{{ t('common.search') }}</label>
+		</p-float-label>
+
+		<p-table [value]="rows()" paginator [rows]="rowCount()" [(first)]="firstIndex" selectionMode="single">
+			<ng-template #body let-row>
+				<tr [style]="{cursor: 'pointer', height: rowHeight + 'px'}" (click)="addDisplay(row.fileName)">
+					<td style="width: 1px; padding: 0">
+						<app-canvas [fileName]="row.fileName" [style]="{display: 'block', height: rowHeight + 'px'}"></app-canvas>
+					</td>
+					<td style="padding: 0 0 0 1em">{{ row.groups.join(", ") }}</td>
+				</tr>
+			</ng-template>
+		</p-table>
+	</div>
+</p-dialog>

@@ -1,0 +1,5 @@
+<div *transloco="let t" class="row">
+	<p-button icon="pi pi-arrow-up" (onClick)="move($event, -1)" [disabled]="index() === 0" severity="secondary" rounded text [pTooltip]="t('common.moveUp')" tooltipPosition="bottom"/>
+	<p-button icon="pi pi-arrow-down" (onClick)="move($event, 1)" [disabled]="index() === count() - 1" severity="secondary" rounded text [pTooltip]="t('common.moveDown')" tooltipPosition="bottom"/>
+	<p-button icon="pi pi-trash" severity="warn" (onClick)="delete($event)" rounded text [pTooltip]="t('common.delete')" tooltipPosition="bottom"/>
+</div>

@@ -1,13 +1,10 @@
 #include "ssd1322.h"
 #include <U8g2lib.h>
 
-SSD1322::SSD1322() : DisplayDriver(256, 64, GPIO_NUM_13) {}
+SSD1322::SSD1322(const bool rotated, const bool hasWipe, const uint8_t pixelatedStyle) : DisplayDriver(256, 64, rotated, hasWipe, pixelatedStyle) {}
 
 bool SSD1322::initRaw()
 {
-    gpio_set_direction(PIN_SCREEN_ENABLE, GPIO_MODE_OUTPUT);
-    GPIO.out_w1ts = (1 << PIN_SCREEN_ENABLE);
-    vTaskDelay(100);
     return U8G2_SSD1322_NHD_256X64_F_8080(U8G2_R0, PIN_D0, PIN_D1, PIN_D2, PIN_D3, PIN_D4, PIN_D5, PIN_D6, PIN_D7, PIN_WR, PIN_CS, PIN_DC, PIN_RST).begin();
 }
 
@@ -26,7 +23,7 @@ void SSD1322::pushRaw()
     // Write data into RAM
     send(0x5C, false);
 
-    for (int i = 0; i < screenWidth * screenHeight / 2; i++)
+    for (uint16_t i = 0; i < screenWidth * screenHeight / 2; i++)
     {
         send(buffer[i], true);
     }

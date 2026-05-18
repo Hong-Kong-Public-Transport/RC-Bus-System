@@ -5,18 +5,11 @@
 class DisplayTransactionMaster
 {
 public:
-    DisplayTransactionMaster(SPIMaster *spiMaster, uint8_t displayIndex);
-    static bool initSD();
-    bool init();
-    void nextDisplay();
+    DisplayTransactionMaster(uint8_t displayIndex, uint32_t totalDisplayGroups);
+    void nextDisplay(SPIMaster *spiMaster);
 
 private:
-    static constexpr gpio_num_t PIN_CS_SD = GPIO_NUM_12;
-    static constexpr uint8_t FUNCTION_SCREEN_OFF = 0;
-    static constexpr uint8_t FUNCTION_SCREEN_ON = 1;
-    static constexpr uint8_t FUNCTION_NEXT_DISPLAY = 2;
-
-    SPIMaster *spiMaster;
     const uint8_t displayIndex;
-    uint8_t currentGroup = 0;
+    const uint32_t totalDisplayGroups;
+    uint32_t currentGroup = 0;
 };

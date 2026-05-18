@@ -1,0 +1,15 @@
+{
+  "name": "StreamReader",
+  "version": "1.0.0",
+  "build": {
+    "srcFilter": [
+      "+<*.cpp>"
+    ]
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "platforms": [
+    "espressif32"
+  ]
+}

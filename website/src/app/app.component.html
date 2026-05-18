@@ -1,25 +1,38 @@
-<div *transloco="let t" class="column center wrapper">
-	@if (getDataInitialized()) {
-		<div class="row gap center title">
-			<h1 class="spacing">{{ t('title') }}</h1>
-			<div class="row gap">
-				<p-button icon="pi pi-upload" [label]="t('title.write-to-directory')" (onClick)="writeToDirectory()"/>
-				<p-button icon="pi pi-images" [label]="t('title.raw-image-manager')" (onClick)="openRawImageManager()"/>
-				<p-button icon="pi pi-cog" [rounded]="true" [text]="true" [pTooltip]="t('tooltip.settings')" tooltipPosition="bottom" (onClick)="menu.toggle($event)"/>
-				<p-tiered-menu #menu [model]="menuItems" [popup]="true"/>
-			</div>
+<div *transloco="let t" class="column wrapper">
+	<div class="row gap center padding-top-bottom padding-sides">
+		<h2 class="spacing">{{ t('title') }}</h2>
+		<div class="row center">
+			<p-button [icon]="getThemeIcon()" (onClick)="toggleTheme()" rounded text severity="secondary" [pTooltip]="t(getThemeTranslationKey())" tooltipPosition="left"/>
+			<p-button icon="pi pi-language" (onClick)="menu.toggle($event)" rounded text severity="secondary" [pTooltip]="t('menu.language')" tooltipPosition="left"/>
+			<p-menu #menu [model]="languageMenuItems" [popup]="true"/>
 		</div>
-		<div class="row gap cards wrapper">
-			@for (_ of getDisplays(); track $index) {
-				<app-display-config class="card" [displayIndex]="$index"/>
-			}
-		</div>
-	} @else {
-		<div class="spacing"></div>
-		<p-progressSpinner/>
-		<div class="spacing"></div>
-	}
-
-	<app-write-to-directory/>
-	<app-raw-image-manager/>
+	</div>
+	<p-tabs class="wrapper" value="0">
+		<p-tablist>
+			<p-tab value="0">
+				<div class="row gap-small center">
+					<i class="pi pi-desktop"></i>
+					<div>{{ t('tab.displays') }}</div>
+				</div>
+			</p-tab>
+			<p-tab value="1">
+				<div class="row gap-small center">
+					<i class="pi pi-cog"></i>
+					<div>{{ t('tab.settings') }}</div>
+				</div>
+			</p-tab>
+		</p-tablist>
+		<p-tabpanels class="wrapper">
+			<p-tabpanel value="0">
+				<div class="padding-top-bottom padding-sides content">
+					<app-displays/>
+				</div>
+			</p-tabpanel>
+			<p-tabpanel value="1">
+				<div class="padding-top-bottom padding-sides content">
+					<!--TODO-->
+				</div>
+			</p-tabpanel>
+		</p-tabpanels>
+	</p-tabs>
 </div>

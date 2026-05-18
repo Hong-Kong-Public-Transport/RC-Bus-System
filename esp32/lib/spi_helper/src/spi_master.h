@@ -1,16 +1,22 @@
 #pragma once
 
 #include "spi_device.h"
-#include "driver/spi_master.h"
-#include <vector>
+#include "stream_wrapper.h"
+#include <SPI.h>
 
 class SPIMaster : public SPIDevice
 {
 public:
-    static bool initBus();
+    SPIMaster(gpio_num_t pinCS);
+    static void initBus();
     bool init() override;
-    bool send(const std::vector<uint8_t> data, uint32_t length);
+    void send(const uint8_t displayIndex, const uint32_t groupIndex);
 
 private:
-    spi_device_handle_t spi;
+    static constexpr gpio_num_t PIN_CS_SD = GPIO_NUM_12;
+    static constexpr uint32_t SPI_SPEED = 1000000;
+
+    static SPIClass *spiBus;
+
+    const gpio_num_t pinCS;
 };

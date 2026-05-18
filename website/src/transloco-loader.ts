@@ -1,13 +1,13 @@
 import {inject, Injectable} from "@angular/core";
-import {TranslocoLoader} from "@jsverse/transloco";
+import {Translation, TranslocoLoader} from "@jsverse/transloco";
 import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
 
 @Injectable({providedIn: "root"})
 export class TranslocoHttpLoader implements TranslocoLoader {
 	private readonly httpClient = inject(HttpClient);
 
-
-	getTranslation(lang: string) {
+	getTranslation(lang: string): Observable<Translation> {
 		return this.httpClient.get(`./assets/i18n/${lang}.json`);
 	}
 }

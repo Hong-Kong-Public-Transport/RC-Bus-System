@@ -1,8 +1,0 @@
-<div *transloco="let t" class="column gap-small" [formGroup]="formGroup">
-	<p-float-label variant="in">
-		<p-select inputId="displayType" [options]="types" formControlName="displayType" [fluid]="true">
-			<ng-template let-type #item #selectedItem>{{ type === 'NONE' ? t(type.toLowerCase()) : getDisplayTypeName(type) }}</ng-template>
-		</p-select>
-		<label for="displayType">{{ t('input.display-type') }}</label>
-	</p-float-label>
-</div>

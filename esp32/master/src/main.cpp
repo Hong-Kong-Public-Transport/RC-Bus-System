@@ -1,62 +1,67 @@
 #include <Arduino.h>
+#include <LittleFS.h>
 #include <init_print.h>
 #include <spi_master.h>
 #include <display_transaction_master.h>
+#include "settings.h"
+
+#define TOTAL_DISPLAY_GROUPS 1
 
 InitPrint initPrint("Main");
-SPIMaster spiMaster1;
-DisplayTransactionMaster displayTransactionMaster1(&spiMaster1, 0);
+SPIMaster spiMaster1(GPIO_NUM_1);
+SPIMaster spiMaster2(GPIO_NUM_2);
+SPIMaster spiMaster3(GPIO_NUM_3);
+DisplayTransactionMaster displayTransactionMaster1(0, TOTAL_DISPLAY_GROUPS);
+DisplayTransactionMaster displayTransactionMaster2(1, TOTAL_DISPLAY_GROUPS);
+DisplayTransactionMaster displayTransactionMaster3(2, TOTAL_DISPLAY_GROUPS);
 
-constexpr gpio_num_t PIN_LED_RED_1 = GPIO_NUM_1;
-constexpr gpio_num_t PIN_LED_YELLOW_1 = GPIO_NUM_2;
-constexpr gpio_num_t PIN_LED_GREEN_1 = GPIO_NUM_3;
-constexpr gpio_num_t PIN_LED_RED_2 = GPIO_NUM_4;
-constexpr gpio_num_t PIN_LED_YELLOW_2 = GPIO_NUM_5;
-constexpr gpio_num_t PIN_LED_GREEN_2 = GPIO_NUM_6;
+constexpr gpio_num_t PIN_LED_RED = GPIO_NUM_4;
+constexpr gpio_num_t PIN_LED_YELLOW = GPIO_NUM_5;
+constexpr gpio_num_t PIN_LED_GREEN = GPIO_NUM_6;
 
-void setStatusLights(bool red1, bool yellow1, bool green1, bool red2, bool yellow2, bool green2)
+void setStatusLights(bool red, bool yellow, bool green)
 {
-	gpio_set_level(PIN_LED_RED_1, red1);
-	gpio_set_level(PIN_LED_YELLOW_1, yellow1);
-	gpio_set_level(PIN_LED_GREEN_1, green1);
-	gpio_set_level(PIN_LED_RED_2, red2);
-	gpio_set_level(PIN_LED_YELLOW_2, yellow2);
-	gpio_set_level(PIN_LED_GREEN_2, green2);
+	digitalWrite(PIN_LED_RED, red);
+	digitalWrite(PIN_LED_YELLOW, yellow);
+	digitalWrite(PIN_LED_GREEN, green);
 }
 
 void setup()
 {
-	gpio_set_direction(PIN_LED_RED_1, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_LED_YELLOW_1, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_LED_GREEN_1, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_LED_RED_2, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_LED_YELLOW_2, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_LED_GREEN_2, GPIO_MODE_OUTPUT);
+	Serial.begin(115200);
+	Serial.println("");
 
-	setStatusLights(false, false, false, false, false, true);
+	pinMode(PIN_LED_RED, OUTPUT);
+	pinMode(PIN_LED_YELLOW, OUTPUT);
+	pinMode(PIN_LED_GREEN, OUTPUT);
+
+	setStatusLights(false, false, true);
 	delay(500);
-	setStatusLights(false, false, false, false, true, false);
+	setStatusLights(false, true, false);
 	delay(500);
-	setStatusLights(false, false, false, true, false, false);
-	delay(500);
-	setStatusLights(false, false, true, false, false, false);
-	delay(500);
-	setStatusLights(false, true, false, false, false, false);
-	delay(500);
-	setStatusLights(true, false, false, false, false, false);
+	setStatusLights(true, false, false);
 	delay(500);
 
-	initPrint.init(SPIMaster::initBus(), "SPI bus");
-	initPrint.init(spiMaster1.init(), "SPI device");
-	initPrint.init(DisplayTransactionMaster::initSD(), "SD card");
-	initPrint.init(displayTransactionMaster1.init(), "SD file structure");
+	initPrint.init(spiMaster1.init(), "SPI device 1");
+	initPrint.init(spiMaster2.init(), "SPI device 2");
+	initPrint.init(spiMaster3.init(), "SPI device 3");
+	SPIMaster::initBus();
+	setStatusLights(false, false, false);
 }
+
+unsigned long nextDisplayMillis = 0;
 
 void loop()
 {
-	setStatusLights(false, false, false, false, false, true);
-	displayTransactionMaster1.nextDisplay();
-	delay(1000);
-	setStatusLights(false, false, false, false, false, false);
-	delay(15000);
+	if (millis() >= nextDisplayMillis)
+	{
+		setStatusLights(false, false, true);
+		displayTransactionMaster1.nextDisplay(&spiMaster1);
+		displayTransactionMaster2.nextDisplay(&spiMaster2);
+		displayTransactionMaster3.nextDisplay(&spiMaster3);
+		nextDisplayMillis = millis() + 15000;
+		setStatusLights(false, false, false);
+	}
+
+	delay(1);
 }

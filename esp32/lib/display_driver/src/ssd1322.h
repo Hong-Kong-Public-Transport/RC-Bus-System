@@ -5,13 +5,11 @@
 class SSD1322 : public DisplayDriver
 {
 public:
-    SSD1322();
+    SSD1322(const bool rotated, const bool hasWipe, const uint8_t pixelatedStyle);
     bool initRaw() override;
     void pushRaw() override;
 
 private:
-    static constexpr gpio_num_t PIN_SCREEN_ENABLE = GPIO_NUM_13;
-
     static constexpr gpio_num_t PIN_D0 = GPIO_NUM_1;
     static constexpr gpio_num_t PIN_D1 = GPIO_NUM_2;
     static constexpr gpio_num_t PIN_D2 = GPIO_NUM_3;

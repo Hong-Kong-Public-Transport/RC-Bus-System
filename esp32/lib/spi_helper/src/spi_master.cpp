@@ -1,64 +1,32 @@
 #include "spi_master.h"
+#include <array>
 
-bool SPIMaster::initBus()
+SPIClass *SPIMaster::spiBus = nullptr;
+
+SPIMaster::SPIMaster(gpio_num_t pinCS) : pinCS(pinCS) {}
+
+void SPIMaster::initBus()
 {
-    spi_bus_config_t busConfig = {
-        .mosi_io_num = PIN_MOSI,
-        .miso_io_num = PIN_MISO,
-        .sclk_io_num = PIN_CLK,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = CHUNK_SIZE,
-    };
-
-    return spi_bus_initialize(SPI2_HOST, &busConfig, SPI_DMA_CH_AUTO) == ESP_OK;
+    if (!spiBus)
+    {
+        spiBus = new SPIClass(HSPI);
+        spiBus->begin(PIN_CLK, PIN_MISO, PIN_MOSI, -1);
+    }
 }
 
 bool SPIMaster::init()
 {
-    spi_device_interface_config_t deviceConfig = {
-        .mode = 0,
-        .clock_speed_hz = 1000000,
-        .spics_io_num = PIN_CS_DISPLAY,
-        .queue_size = 3,
-    };
-
-    return spi_bus_add_device(SPI2_HOST, &deviceConfig, &spi) == ESP_OK;
+    pinMode(pinCS, OUTPUT);
+    digitalWrite(pinCS, HIGH);
+    return true;
 }
 
-bool SPIMaster::send(const std::vector<uint8_t> data, uint32_t length)
+void SPIMaster::send(const uint8_t displayIndex, const uint32_t groupIndex)
 {
-    uint32_t headerPayload[] = {MAGIC_HEADER, length};
-    spi_transaction_t headerTransaction = {
-        .flags = 0,
-        .length = TOTAL_HEADER_LENGTH,
-        .tx_buffer = headerPayload,
-        .rx_buffer = NULL,
-    };
-
-    if (spi_device_transmit(spi, &headerTransaction) != ESP_OK)
-    {
-        return false;
-    }
-
-    uint32_t sentLength = 0;
-    while (sentLength < length)
-    {
-        uint32_t chunkLength = min(CHUNK_SIZE, length - sentLength);
-
-        spi_transaction_t bodyTransaction = {
-            .length = chunkLength * 8,
-            .tx_buffer = data.data() + sentLength,
-            .rx_buffer = NULL,
-        };
-
-        if (spi_device_transmit(spi, &bodyTransaction) != ESP_OK)
-        {
-            return false;
-        }
-
-        sentLength += chunkLength;
-    }
-
-    return true;
+    digitalWrite(pinCS, LOW);
+    spiBus->beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE0));
+    uint32_t headerPayload[] = {MAGIC_HEADER, displayIndex, groupIndex, MAGIC_FOOTER};
+    spiBus->transferBytes((uint8_t *)headerPayload, nullptr, DATA_LENGTH);
+    spiBus->endTransaction();
+    digitalWrite(pinCS, HIGH);
 }

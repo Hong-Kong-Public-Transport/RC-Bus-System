@@ -1,10 +1,33 @@
 #include "spi_slave.h"
 #include "driver/spi_slave.h"
+#include <vector>
+#include <esp_heap_caps.h>
+
+SPISlave::~SPISlave()
+{
+    // Free DMA buffers to prevent memory leak
+    if (rxDmaBuffer)
+    {
+        heap_caps_free(rxDmaBuffer);
+        rxDmaBuffer = nullptr;
+    }
+
+    if (txDmaBuffer)
+    {
+        heap_caps_free(txDmaBuffer);
+        txDmaBuffer = nullptr;
+    }
+}
 
 bool SPISlave::init()
 {
-    rxDmaBuffer = (uint8_t *)heap_caps_calloc(CHUNK_SIZE, sizeof(uint8_t), MALLOC_CAP_DMA);
-    txDmaBuffer = (uint8_t *)heap_caps_calloc(CHUNK_SIZE, sizeof(uint8_t), MALLOC_CAP_DMA);
+    rxDmaBuffer = static_cast<uint8_t *>(heap_caps_calloc(CHUNK_SIZE, sizeof(uint8_t), MALLOC_CAP_DMA));
+    txDmaBuffer = static_cast<uint8_t *>(heap_caps_calloc(CHUNK_SIZE, sizeof(uint8_t), MALLOC_CAP_DMA));
+
+    if (!rxDmaBuffer || !txDmaBuffer)
+    {
+        return false;
+    }
 
     spi_bus_config_t busConfig = {
         .mosi_io_num = PIN_MOSI,
@@ -22,7 +45,7 @@ bool SPISlave::init()
         .mode = 0,
     };
 
-    messageQueue = xQueueCreate(3, sizeof(uint8_t *));
+    messageQueue = xQueueCreate(3, sizeof(uint32_t *));
     return spi_slave_initialize(SPI2_HOST, &busConfig, &slaveConfig, SPI_DMA_CH_AUTO) == ESP_OK;
 }
 
@@ -30,7 +53,7 @@ void SPISlave::tick()
 {
     // Setup header transaction
     spi_slave_transaction_t headerTransaction = {
-        .length = TOTAL_HEADER_LENGTH,
+        .length = DATA_LENGTH * 8,
         .tx_buffer = txDmaBuffer,
         .rx_buffer = rxDmaBuffer,
     };
@@ -41,57 +64,24 @@ void SPISlave::tick()
         return;
     }
 
-    uint32_t magicHeader = ((uint32_t *)rxDmaBuffer)[0];
-    uint32_t totalLength = ((uint32_t *)rxDmaBuffer)[1];
+    uint32_t magicHeader = 0;
+    uint32_t magicFooter = 0;
+    uint32_t *data = new uint32_t[2];
+    memcpy(&magicHeader, rxDmaBuffer, sizeof(magicHeader));
+    memcpy(data, rxDmaBuffer + sizeof(uint32_t), sizeof(uint32_t) * 2);
+    memcpy(&magicFooter, rxDmaBuffer + sizeof(uint32_t) * 3, sizeof(magicFooter));
 
-    // Verify header
-    if (magicHeader != MAGIC_HEADER || totalLength == 0)
+    // Verify header and footer
+    if (magicHeader != MAGIC_HEADER || magicFooter != MAGIC_FOOTER)
     {
+        delete[] data;
         return;
     }
 
-    // Allocate a buffer to hold the entire body
-    uint8_t *payload = (uint8_t *)malloc(totalLength);
-    uint32_t receivedLength = 0;
+    Serial.println(String("Received SPI message for display ") + (data[0] + 1) + String(" and group ") + (data[1] + 1));
 
-    // Verify payload allocation
-    if (!payload)
+    if (xQueueSend(messageQueue, &data, 0) != pdPASS)
     {
-        return;
-    }
-
-    // Receive body in chunks
-    while (receivedLength < totalLength)
-    {
-        // Setup body chunk transaction
-        uint32_t chunkLength = min(CHUNK_SIZE, totalLength - receivedLength);
-        spi_slave_transaction_t bodyTransaction = {
-            .length = chunkLength * 8,
-            .tx_buffer = txDmaBuffer,
-            .rx_buffer = rxDmaBuffer,
-        };
-
-        // Receive body chunk
-        if (spi_slave_transmit(SPI2_HOST, &bodyTransaction, portMAX_DELAY) != ESP_OK)
-        {
-            break;
-        }
-
-        // Copy body chunk to payload buffer
-        memcpy(payload + receivedLength, rxDmaBuffer, chunkLength);
-        receivedLength += chunkLength;
-    }
-
-    // Verify if packet is complete
-    if (receivedLength != totalLength || totalLength == 0)
-    {
-        free(payload);
-        return;
-    }
-
-    // Send message to queue
-    if (xQueueSend(messageQueue, &payload, 0) != pdPASS)
-    {
-        free(payload);
+        delete[] data;
     }
 }

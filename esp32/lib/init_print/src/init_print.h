@@ -1,9 +1,5 @@
 #pragma once
 
-#include "esp_log.h"
-#include "esp_err.h"
-#include "freertos/task.h"
-
 class InitPrint
 {
 public:
@@ -12,15 +8,13 @@ public:
     {
         if (result)
         {
-            ESP_LOGI(tag, "%s initialization successful", message);
+            Serial.printf("[%s] %s initialization successful\n", tag, message);
         }
         else
         {
-            ESP_LOGE(tag, "%s initialization failed", message);
-            while (true)
-            {
-                vTaskDelay(1);
-            }
+            Serial.printf("[%s] %s initialization failed\n", tag, message);
+            delay(1000);
+            ESP.restart();
         }
     }
 

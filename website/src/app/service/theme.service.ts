@@ -16,7 +16,7 @@ export class ThemeService {
 	}
 
 	private setElementTag() {
-		setCookie("dark_theme", this.darkTheme.toString());
+		setCookie("dark_theme", this.darkTheme().toString());
 
 		const element = document.querySelector("html");
 		if (element) {

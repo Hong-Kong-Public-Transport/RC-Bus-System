@@ -1,18 +1,15 @@
-import "reflect-metadata";
 import {bootstrapApplication} from "@angular/platform-browser";
 import {AppComponent} from "./app/app.component";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideHttpClient} from "@angular/common/http";
 import {isDevMode} from "@angular/core";
 import {providePrimeNG} from "primeng/config";
 import {myPreset} from "./theme-preset";
 import {provideTransloco} from "@jsverse/transloco";
 import {TranslocoHttpLoader} from "./transloco-loader";
-import {FormatCategoryPipe} from "./app/pipe/format-category.pipe";
+import {getCookie} from "./app/utility/utilities";
 
 bootstrapApplication(AppComponent, {
 	providers: [
-		provideAnimationsAsync(),
 		provideHttpClient(),
 		providePrimeNG({
 			theme: {
@@ -23,12 +20,11 @@ bootstrapApplication(AppComponent, {
 		provideTransloco({
 			config: {
 				availableLangs: ["en", "zh"],
-				defaultLang: "en",
+				defaultLang: getCookie("language") || "en",
 				reRenderOnLangChange: true,
 				prodMode: !isDevMode(),
 			},
 			loader: TranslocoHttpLoader,
 		}),
-		FormatCategoryPipe,
 	],
 }).catch(error => console.error(error));

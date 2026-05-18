@@ -18,7 +18,7 @@
 					"builder": "@angular/build:application",
 					"options": {
 						"outputPath": {
-							"base": "../src/main/resources/static",
+							"base": "../esp32/master/data",
 							"browser": ""
 						},
 						"index": "src/index.html",
@@ -93,6 +93,7 @@
 		"packageManager": "npm",
 		"schematicCollections": [
 			"angular-eslint"
-		]
+		],
+		"analytics": false
 	}
 }
