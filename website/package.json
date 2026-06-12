@@ -34,7 +34,7 @@
 		"@angular/compiler-cli": "^22.0.1",
 		"@eslint/js": "^10.0.1",
 		"angular-eslint": "22.0.0",
-		"baseline-browser-mapping": "^2.10.35",
+		"baseline-browser-mapping": "^2.10.36",
 		"eslint": "^10.4.1",
 		"typescript-eslint": "8.61.0"
 	}
