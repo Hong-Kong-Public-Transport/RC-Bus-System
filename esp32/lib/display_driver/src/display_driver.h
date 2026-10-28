@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <vector>
+#include "soc/gpio_struct.h"
 
 class DisplayDriver
 {
